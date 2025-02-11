@@ -6,7 +6,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <title>ГРОЗА УНИТАЗОВ!!</title>
     <style>
-        /* Все предыдущие стили остаются */
          * {
             box-sizing: border-box;
             margin: 0;
@@ -17,13 +16,13 @@
             font-family: Arial, sans-serif;
             background: #FFFFFF;
             height: 100vh;
+            overflow: hidden; /* Скрываем полосу прокрутки */
         }
 
         .screen {
             display: none;
             height: 100vh;
             overflow-y: auto;
-            padding-bottom: 80px;
         }
 
         .screen.active {
@@ -36,7 +35,6 @@
             padding: 15px;
         }
 
-        /* Стили для экрана рисования */
         #drawScreen {
             background: #fff;
         }
@@ -47,27 +45,27 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin: 10px 0;
             width: 100%;
-            height: 100%;
+            height: calc(100vh - 90px); /* Отнимаем высоту инструментов */
         }
 
         #canvas {
             touch-action: none;
             width: 100%;
-            height: 100vh;
+            height: 100%; /* Высота 100% для растягивания по контейнеру */
         }
 
         .tools {
             display: flex;
             flex-direction: row;
-            justify-content: space-evenly;
-            gap: 10px;
+            justify-content: space-between;
             position: fixed;
             bottom: 0;
             width: 100%;
             height: 70px;
             background: #F4F4F4;
             color: black;
-            flex-wrap: wrap;
+            padding: 0 15px;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
         }
 
         /* Стили для галереи */
@@ -93,10 +91,9 @@
             border-radius: 6px;
         }
 
-        /* Плавающая кнопка */
         .fab {
             position: fixed;
-            bottom: 20px;
+            bottom: 80px;
             right: 20px;
             width: 56px;
             height: 56px;
@@ -121,36 +118,29 @@
             color: black;
             cursor: pointer;
         }
-        /********** Range Input Styles **********/
-        /*Range Reset*/
+
         input[type="range"] {
-           -webkit-appearance: none;
+            -webkit-appearance: none;
             appearance: none;
             background: transparent;
             cursor: pointer;
             width: 100px;
         }
 
-        /* Removes default focus */
         input[type="range"]:focus {
             outline: none;
         }
 
-        /***** Chrome, Safari, Opera and Edge Chromium styles *****/
-        /* slider track */
         input[type="range"]::-webkit-slider-runnable-track {
             background-color: #e7bef3;
             border-radius: 5rem;
             height: 0.5rem;  
         }
 
-        /* slider thumb */
         input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none; /* Override default look */
+            -webkit-appearance: none;
             appearance: none;
-            margin-top: -12px; /* Centers thumb on the track */
-
-            /*custom styles*/
+            margin-top: -12px;
             background-color: #dc57fd;
             height: 2rem;
             border-radius: 100px;
@@ -167,7 +157,6 @@
             border-radius: 50%;
         }
         
-        /* Модальное окно */
         .modal {
             display: none;
             position: fixed;
@@ -201,34 +190,31 @@
     </style>
 </head>
 <body>
-    <!-- Добавляем модальное окно -->
-    <div class="modal" id="modal">
-        <div class="modal-content">
+    <div class="modal" id="modal" onclick="hideModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation();">
             <h2>Добавить описание</h2>
             <input type="text" id="titleInput" class="modal-input" placeholder="Название рисунка">
             <input type="text" id="authorInput" class="modal-input" placeholder="Автор">
             <button class="tool-btn" onclick="saveDrawing()">Сохранить</button>
+            <button class="tool-btn" onclick="hideModal(event)">Закрыть</button>
         </div>
     </div>
 
-     <!-- Экран галереи -->
     <div class="screen active" id="galleryScreen">
         <div class="container">
             <h1 style="margin: 15px; margin-top: 50px; font-weight: normal;">Наша галерея</h1>
             <div class="gallery" id="gallery"></div>
+            <button class="tool-btn" onclick="clearAllDrawings()">Очистить галерею</button>
         </div>
         <button class="fab" onclick="showDrawScreen()">+</button>
     </div>
 
-    <!-- Экран рисования -->
     <div class="screen" id="drawScreen">
         <div class="container">
             <h1 style="margin: 15px; margin-top: 50px; font-weight: normal;">Нарисуй шедевр, кчау</h1>
-            
             <div class="canvas-wrapper">
                 <canvas id="canvas"></canvas>
             </div>
-            
             <div class="tools">
                 <input type="color" id="color" value="#000000">
                 <input type="range" id="size" min="1" max="50" value="5">
@@ -240,17 +226,20 @@
     </div>
 
     <script>
-        // Канвас и контекст
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
 
-        // Устанавливаем размер канваса
+        let isDrawing = false;
+        let currentColor = '#000000';
+        let brushSize = 5;
+        let currentDataUrl = null;
+        let drawings = [];
+
         function resizeCanvas() {
             canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight - document.querySelector('.tools').offsetHeight;
+            canvas.height = window.innerHeight - document.querySelector('.tools').offsetHeight; // Высота окна минус высота инструментов
         }
 
-        // Устанавливаем текущий цвет и толщину кисти из элементов управления
         document.getElementById('color').addEventListener('input', (e) => {
             currentColor = e.target.value;
         });
@@ -259,32 +248,49 @@
             brushSize = e.target.value;
         });
 
-        // Текущий цвет кисти
-        let currentColor = '#000000';
+        canvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            ctx.beginPath();
+            draw(e);
+        });
 
-        // Толщина кисти
-        let brushSize = 5;
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', () => isDrawing = false);
+        canvas.addEventListener('mouseleave', () => isDrawing = false);
 
-        // Флаг указывающий на то, что рисование активно
-        let isDrawing = false;
-
-        // Текущее изображение
-        let currentDataUrl = null;
-
-        // Массив сохраненных рисунков
-        let drawings = [];
-
-        // Функция сохранения текущего изображения в LocalStorage
-        function saveCurrentDrawing() {
-            const dataUrl = canvas.toDataURL();
-            localStorage.setItem('currentDrawing', dataUrl);
+        function draw(e) {
+            if (!isDrawing) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            ctx.lineTo(x, y);
+            ctx.strokeStyle = currentColor;
+            ctx.lineWidth = brushSize;
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
         }
 
-        // Функция сохранения текущего изображения после нажатия кнопки «Сохранить»
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function toggleEraser() {
+            currentColor = (currentColor === '#ffffff') ? '#000000' : '#ffffff'; // Смена цвета
+            document.getElementById('color').value = currentColor; // Обновляем цвет в элементе управления
+        }
+
         function saveAndReturn() {
-            saveCurrentDrawing();
             currentDataUrl = canvas.toDataURL();
             showModal();
+        }
+
+        function showModal() {
+            document.getElementById('modal').style.display = 'block';
+        }
+
+        function hideModal(event) {
+            document.getElementById('modal').style.display = 'none';
         }
 
         function showDrawScreen() {
@@ -293,24 +299,11 @@
             resizeCanvas();
         }
 
-        // Функция загрузки сохраненного изображения в LocalStorage
-        function loadCurrentDrawing() {
-            const dataUrl = localStorage.getItem('currentDrawing');
-            if (dataUrl) {
-                const img = new Image();
-                img.onload = function() {
-                    ctx.drawImage(img, 0, 0);
-                };
-                img.src = dataUrl;
-            }
-        }
-
-        // Функция сохранения рисунков в LocalStorage
         function saveDrawing() {
             const title = document.getElementById('titleInput').value;
             const author = document.getElementById('authorInput').value;
-            if (!title || !author) {
-                alert('Заполните все поля!');
+            if (!title || !author || !currentDataUrl) {
+                alert('Заполните все поля и нарисуйте что-нибудь!');
                 return;
             }
 
@@ -324,82 +317,48 @@
 
             drawings.push(drawingData);
             localStorage.setItem('drawings', JSON.stringify(drawings));
+            hideModal();
             clearCanvas();
+            loadGallery();
             showGallery();
         }
 
-        // Функция очистки канваса
-        function clearCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        function loadGallery() {
+            const galleryElement = document.getElementById('gallery');
+            galleryElement.innerHTML = '';
+            const savedDrawings = JSON.parse(localStorage.getItem('drawings')) || [];
+            savedDrawings.forEach(drawing => {
+                const galleryItem = document.createElement('div');
+                galleryItem.className = 'gallery-item';
+                galleryItem.innerHTML = `
+                    <img src="${drawing.image}" alt="${drawing.title}">
+                    <h2>${drawing.title}</h2>
+                    <p>Автор: ${drawing.author}</p>
+                    <p>Дата: ${drawing.date}</p>
+                `;
+                galleryElement.appendChild(galleryItem);
+            });
         }
 
-        // Функция отображения модального окна
-        function showModal() {
-            const modal = document.getElementById('modal');
-            modal.style.display = 'block';
-        }
-
-        // Функция отображения галереи рисунков
         function showGallery() {
-            const gallery = document.getElementById('gallery');
-            gallery.innerHTML = ''; // Очистка галереи перед добавлением
-            const drawingsData = localStorage.getItem('drawings');
-            if (drawingsData) {
-                drawings = JSON.parse(drawingsData);
-                drawings.forEach(drawing => {
-                    const galleryItem = document.createElement('div');
-                    galleryItem.className = 'gallery-item';
-                    galleryItem.innerHTML = `
-                        <h2>${drawing.title}</h2>
-                        <p>Автор: ${drawing.author}</p>
-                        <p>Дата: ${drawing.date}</p>
-                        <img src="${drawing.image}" alt="${drawing.title}">
-                    `;
-                    gallery.appendChild(galleryItem);
-                });
-            }
-
-            // Показ галереи и скрытие рисовальной страницы
             document.getElementById('galleryScreen').classList.add('active');
             document.getElementById('drawScreen').classList.remove('active');
         }
 
-        // Обработчики событий
-        canvas.addEventListener('mousedown', (e) => {
-            isDrawing = true;
-            const x = e.offsetX;
-            const y = e.offsetY;
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-        });
-
-        canvas.addEventListener('mousemove', (e) => {
-            if (isDrawing) {
-                const x = e.offsetX;
-                const y = e.offsetY;
-                ctx.lineTo(x, y);
-                ctx.strokeStyle = currentColor;
-                ctx.lineWidth = brushSize;
-                ctx.stroke();
+        function clearAllDrawings() {
+            if (confirm('Вы уверены, что хотите очистить галерею?')) {
+                localStorage.removeItem('drawings');
+                loadGallery();
             }
-        });
+        }
 
-        canvas.addEventListener('mouseup', () => {
-            isDrawing = false;
-        });
-
-        canvas.addEventListener('mouseleave', () => {
-            isDrawing = false;
-        });
-
-        // document.getElementById('saveButton').addEventListener('click', saveAndReturn);
-        // document.getElementById('clearButton').addEventListener('click', clearCanvas);
-        // document.getElementById('galleryButton').addEventListener('click', showGallery);
-
-        // Инициализация
-        loadCurrentDrawing();
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas); // Обработка изменения размера окна
+        window.addEventListener('resize', resizeCanvas);
+        window.onload = function() {
+            const savedDrawings = JSON.parse(localStorage.getItem('drawings')) || [];
+            drawings = savedDrawings; 
+            loadGallery();
+            resizeCanvas();
+        };
     </script>
 </body>
 </html>
