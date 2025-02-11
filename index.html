@@ -6,7 +6,180 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <title>ГРОЗА УНИТАЗОВ!!</title>
     <style>
-        /* Ваши стили остаются без изменений... */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #FFFFFF;
+            height: 100vh;
+            margin: 0;
+        }
+        .screen {
+            display: none;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        .screen.active {
+            display: block;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+        #drawScreen {
+            background: #fff;
+        }
+        .canvas-wrapper {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 10px 0;
+            width: 100%;
+            height: 400px; /* Фиксированная высота */
+        }
+        #canvas {
+            touch-action: none;
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+        }
+        .color-picker {
+            display: flex;
+            align-items: center;
+        }
+        input[type="color"] {
+            -webkit-appearance: none;
+            appearance: none;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            outline: none;
+            border: 2px solid transparent;
+        }
+        .fab {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            font-size: 36px;
+            background: #F4F4F4;
+            color: #5937F3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 1000;
+            border: none;
+        }
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .modal-input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .gallery-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            height: fit-content;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .gallery-item img {
+            max-width: 100%;
+            height: 200px;
+            border-radius: 10px;
+        }
+        h2, p {
+            margin: 5px 0;
+        }
+        .tools {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start; 
+            position: fixed;  
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            background: #F4F4F4;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+            border-top: 2px solid #D0D0D0; /* Top border for separation */
+            overflow-x: auto; /* Allow horizontal scroll */
+        }
+        .color-picker {
+            display: flex;
+            align-items: center;
+        }
+        .color-picker label {
+            margin-right: 8px;
+            font-weight: bold; /* Make label text bold */
+        }
+        input[type="color"] {
+            cursor: pointer;
+            border: 2px solid #E0E0E0;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            transition: border 0.3s; /* Smooth transition */
+        }
+        input[type="color"]:hover {
+            border-color: #5937F3; /* Change border color on hover */
+        }
+        .brush-size {
+            margin: 0 10px; /* Add margins */
+        }
+        .tool-btn {
+            background: #E0E0E0;
+            border: none; /* Remove borders */
+            outline: none; /* Remove outline */
+            padding: 10px 15px; /* Add padding for size */
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+            font-size: 18px; /* Increase font size */
+        }
+        .tool-btn:hover {
+            background: #D0D0D0; /* Change button color on hover */
+            transform: scale(1.05); /* Slightly scale up on hover */
+        }
+        .tool-btn:active {
+            transform: scale(0.95); /* Slightly scale down on active */
+        }
+        .spec-btn {
+            border-radius: 50%;
+        }
     </style>
 </head>
 <body>
@@ -50,7 +223,6 @@
     </div>
 
     <script>
-        // Canvas setup
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         let isDrawing = false;
@@ -59,46 +231,39 @@
         let undoStack = [];
         let redoStack = [];
 
-        // Resize canvas to fit the screen
         function resizeCanvas() {
-            canvas.width = document.querySelector('.canvas-wrapper').clientWidth; // ширина родительского элемента
-            canvas.height = 400; // фиксированная высота
+            canvas.width = document.querySelector('.canvas-wrapper').clientWidth;
+            canvas.height = 400; 
         }
 
-        // Set color on change
         function setColor(color) {
             currentColor = color;
         }
 
-        // Brush size input handling
         document.getElementById('size').addEventListener('input', (e) => {
             brushSize = e.target.value;
         });
 
-        // Mouse and touch event handling
-        canvas.addEventListener('mousedown', (e) => { startDrawing(e); });
-        canvas.addEventListener('mousemove', (e) => { draw(e); });
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
         canvas.addEventListener('mouseup', stopDrawing);
         canvas.addEventListener('mouseleave', stopDrawing);
-
-        canvas.addEventListener('touchstart', (e) => { startDrawing(e); });
-        canvas.addEventListener('touchmove', (e) => { drawTouch(e); });
+        canvas.addEventListener('touchstart', startDrawing);
+        canvas.addEventListener('touchmove', drawTouch);
         canvas.addEventListener('touchend', stopDrawing);
 
-        // Start drawing
         function startDrawing(e) {
             isDrawing = true;
-            saveState(); // Save state at the beginning of drawing
+            saveState();
             ctx.beginPath();
             draw(e);
         }
 
-        // Draw on canvas
         function draw(e) {
             if (!isDrawing) return;
             const rect = canvas.getBoundingClientRect();
-            const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left; // Коррекция по позиции
-            const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;  // Коррекция по позиции
+            const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
+            const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
             ctx.lineTo(x, y);
             ctx.strokeStyle = currentColor;
             ctx.lineWidth = brushSize;
@@ -113,71 +278,60 @@
             draw(e);
         }
 
-        // Stop drawing
         function stopDrawing() {
             if (!isDrawing) return;
             isDrawing = false;
             ctx.beginPath();
         }
 
-        // Save canvas state for undo functionality
         function saveState() {
             undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
             redoStack = [];
         }
 
-        // Undo last action
         function undoLast() {
             if (undoStack.length === 0) return;
             redoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
             ctx.putImageData(undoStack.pop(), 0, 0);
         }
 
-        // Redo last undone action
         function redoLast() {
             if (redoStack.length === 0) return;
             undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
             ctx.putImageData(redoStack.pop(), 0, 0);
         }
 
-        // Clear the canvas
         function clearCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             undoStack = [];
         }
 
-        // Toggle eraser functionality
         function toggleEraser() {
             currentColor = (currentColor === '#FFFFFF') ? '#000000' : '#FFFFFF';
             document.getElementById('color').value = currentColor;
         }
 
-        // Save current drawing
         function saveAndReturn() {
             const currentDataUrl = canvas.toDataURL();
             showModal(currentDataUrl);
         }
 
-        // Show modal for drawing details
         function showModal(currentDataUrl) {
             document.getElementById('modal').style.display = 'block';
             document.getElementById('titleInput').value = '';
             document.getElementById('authorInput').value = '';
         }
 
-        // Hide modal
         function hideModal(event) {
             document.getElementById('modal').style.display = 'none';
         }
 
-        // Show drawing screen
         function showDrawScreen() {
             document.getElementById('drawScreen').classList.add('active');
             document.getElementById('galleryScreen').classList.remove('active');
             resizeCanvas();
         }
 
-        // Save drawing to the server
         async function saveDrawing() {
             const title = document.getElementById('titleInput').value;
             const author = document.getElementById('authorInput').value;
@@ -194,7 +348,6 @@
                 image: currentDataUrl,
             };
 
-            // Sending data to the server
             const response = await fetch('https://abddie.pythonanywhere.com/drawings/', {
                 method: 'POST',
                 headers: {
@@ -206,25 +359,24 @@
             if (response.ok) {
                 hideModal();
                 clearCanvas();
-                await loadGallery(); // Загрузка галереи после сохранения
+                await loadGallery();
                 showGallery();
             } else {
                 alert('Ошибка сохранения рисунка');
             }
         }
 
-        // Load gallery from the server
         async function loadGallery() {
             const galleryElement = document.getElementById('gallery');
             galleryElement.innerHTML = '';
             const response = await fetch('https://abddie.pythonanywhere.com/drawings/');
+
             if (!response.ok) {
                 alert('Ошибка загрузки галереи');
                 return; // Если есть ошибка загрузки, прекращаем выполнение
             }
             const savedDrawings = await response.json();
 
-            // Проверка возвращаемых данных
             if (Array.isArray(savedDrawings) && savedDrawings.length > 0) {
                 savedDrawings.forEach(drawing => {
                     const galleryItem = document.createElement('div');
@@ -244,22 +396,26 @@
             }
         }
 
-        // Show the gallery
         function showGallery() {
             document.getElementById('galleryScreen').classList.add('active');
             document.getElementById('drawScreen').classList.remove('active');
         }
 
-        // Clear all saved drawings (Only for demonstration, needs adjustment if there's an endpoint)
         async function clearAllDrawings() {
             if (confirm('Вы уверены, что хотите очистить галерею?')) {
-                // Законный DELETE должен быть создан на сервере для этого
-                // await fetch('https://abddie.pythonanywhere.com/drawings/', { method: 'DELETE' });
-                document.getElementById('gallery').innerHTML = ''; // очищаем только локально для простоты
+                const response = await fetch('https://abddie.pythonanywhere.com/drawings/', { 
+                    method: 'DELETE'  // Убедитесь, что у вас есть соответствующий серверный метод
+                });
+
+                if (response.ok) {
+                    alert('Галерея очищена.');
+                    loadGallery();
+                } else {
+                    alert('Ошибка очистки галереи');
+                }
             }
         }
 
-        // Resize canvas on window resize
         window.addEventListener('resize', resizeCanvas);
         window.onload = function() {
             loadGallery(); // Загрузка галереи при загрузке страницы
