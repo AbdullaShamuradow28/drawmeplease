@@ -333,38 +333,37 @@
         }
 
         async function saveDrawing() {
-            const title = document.getElementById('titleInput').value;
-            const author = document.getElementById('authorInput').value;
-            const currentDataUrl = canvas.toDataURL();
+    const title = document.getElementById('titleInput').value;
+    const author = document.getElementById('authorInput').value;
 
-            if (!title || !author || !currentDataUrl) {
-                alert('Заполните все поля и нарисуйте что-нибудь!');
-                return;
-            }
+    // Преобразуем рисунок в Blob
+    const currentDataUrl = canvas.toDataURL();
+    const blob = await (await fetch(currentDataUrl)).blob(); 
 
-            const drawingData = {
-                title,
-                author,
-                image: currentDataUrl,
-            };
+    if (!title || !author || !blob) {
+        alert('Заполните все поля и нарисуйте что-нибудь!');
+        return;
+    }
 
-            const response = await fetch('https://abddie.pythonanywhere.com/drawings/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(drawingData)
-            });
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('author', author);
+    formData.append('image', blob, 'drawing.png'); // Можно задать имя файла в качестве 'drawing.png'
 
-            if (response.ok) {
-                hideModal();
-                clearCanvas();
-                await loadGallery();
-                showGallery();
-            } else {
-                alert('Ошибка сохранения рисунка');
-            }
-        }
+    const response = await fetch('https://abddie.pythonanywhere.com/drawings/', {
+        method: 'POST',
+        body: formData
+    });
+
+    if (response.ok) {
+        hideModal();
+        clearCanvas();
+        await loadGallery();
+        showGallery();
+    } else {
+        alert('Ошибка сохранения рисунка');
+    }
+}
 
         async function loadGallery() {
             const galleryElement = document.getElementById('gallery');
