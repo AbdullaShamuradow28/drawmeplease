@@ -265,6 +265,107 @@ input[type="range"]::-webkit-slider-thumb {
             }
         };
 
+                // Управление экранами
+        function showGallery() {
+            document.getElementById('galleryScreen').classList.add('active');
+            document.getElementById('drawScreen').classList.remove('active');
+            loadGallery();
+        }
+
+        function showDrawScreen() {
+            document.getElementById('drawScreen').classList.add('active');
+            document.getElementById('galleryScreen').classList.remove('active');
+            resizeCanvas();
+        }
+
+        // Инициализация холста
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let isEraser = false;
+
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            ctx.lineCap = 'round';
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Настройки рисования
+        let currentColor = '#000000';
+        let currentSize = 5;
+
+        // События
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', endDrawing);
+        canvas.addEventListener('touchstart', startDrawing);
+        canvas.addEventListener('touchmove', draw);
+        canvas.addEventListener('touchend', endDrawing);
+
+        function startDrawing(e) {
+            e.preventDefault();
+            isDrawing = true;
+            ctx.beginPath();
+            draw(e);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX || e.touches[0].clientX) - rect.left;
+            const y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+            ctx.lineTo(x, y);
+            ctx.strokeStyle = isEraser ? '#ffffff' : currentColor;
+            ctx.lineWidth = currentSize;
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        function endDrawing() {
+            isDrawing = false;
+            ctx.beginPath();
+        }
+
+        // Управление инструментами
+        document.getElementById('color').addEventListener('change', (e) => {
+            currentColor = e.target.value;
+            isEraser = false;
+        });
+
+        document.getElementById('size').addEventListener('input', (e) => {
+            currentSize = e.target.value;
+        });
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function toggleEraser() {
+            isEraser = !isEraser;
+        }
+
+        // Работа с данными
+        function saveAndReturn() {
+            const dataUrl = canvas.toDataURL();
+            const drawings = JSON.parse(localStorage.getItem('drawings') || '[]');
+            
+            drawings.push({
+                id: Date.now(),
+                title: `Рисунок ${drawings.length + 1}`,
+                image: dataUrl,
+                date: new Date().toISOString()
+            });
+            
+            localStorage.setItem('drawings', JSON.stringify(drawings));
+            clearCanvas();
+            showGallery();
+        }
+
         // Модальное окно
         let currentDataUrl = '';
         
