@@ -52,6 +52,34 @@
         </div>
     </div>
 
+     <!-- Экран галереи -->
+    <div class="screen active" id="galleryScreen">
+        <div class="container">
+            <h1 style="margin: 15px; margin-top: 50px; font-weight: normal;">Наша галерея</h1>
+            <div class="gallery" id="gallery"></div>
+        </div>
+        <button class="fab" onclick="showDrawScreen()">+</button>
+    </div>
+
+    <!-- Экран рисования -->
+    <div class="screen" id="drawScreen">
+        <div class="container">
+            <h1 style="margin: 15px; margin-top: 50px; font-weight: normal;">Нарисуй шедевр, кчау</h1>
+            
+            <div class="canvas-wrapper">
+                <canvas id="canvas"></canvas>
+            </div>
+            
+            <div class="tools">
+                <input type="color" id="color" value="#000000">
+                <input type="range" id="size" min="1" max="50" value="5">
+                <button class="tool-btn" onclick="clearCanvas()"><i class="fa fa-refresh"></i></button>
+                <button class="tool-btn" onclick="toggleEraser()"><i class="fa fa-eraser"></i></button>
+                <button class="tool-btn" onclick="saveAndReturn()"><i class="fa fa-save"></i></button>
+            </div>
+        </div>
+    </div>
+
     <!-- Остальная разметка без изменений -->
 
     <script>
