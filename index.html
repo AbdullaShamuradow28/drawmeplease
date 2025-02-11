@@ -65,11 +65,6 @@
             bottom: 0;
             width: 100%;
             height: 70px;
-            margin-left: auto;
-            margin-right: auto;
-            padding: 10px;
-            margin: 0;
-            left: 0;
             background: #F4F4F4;
             color: black;
             flex-wrap: wrap;
@@ -123,46 +118,46 @@
             outline: none;
             background: transparent;
             border-radius: 20px;
-            color:black;
+            color: black;
             cursor: pointer;
         }
         /********** Range Input Styles **********/
-/*Range Reset*/
-input[type="range"] {
-   -webkit-appearance: none;
-    appearance: none;
-    background: transparent;
-    cursor: pointer;
-    width: 100px;
-}
+        /*Range Reset*/
+        input[type="range"] {
+           -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+            width: 100px;
+        }
 
-/* Removes default focus */
-input[type="range"]:focus {
-  outline: none;
-}
+        /* Removes default focus */
+        input[type="range"]:focus {
+            outline: none;
+        }
 
-/***** Chrome, Safari, Opera and Edge Chromium styles *****/
-/* slider track */
-input[type="range"]::-webkit-slider-runnable-track {
-   background-color: #e7bef3;
-   border-radius: 5rem;
-   height: 0.5rem;  
-}
+        /***** Chrome, Safari, Opera and Edge Chromium styles *****/
+        /* slider track */
+        input[type="range"]::-webkit-slider-runnable-track {
+            background-color: #e7bef3;
+            border-radius: 5rem;
+            height: 0.5rem;  
+        }
 
-/* slider thumb */
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none; /* Override default look */
-   appearance: none;
-   margin-top: -12px; /* Centers thumb on the track */
+        /* slider thumb */
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; /* Override default look */
+            appearance: none;
+            margin-top: -12px; /* Centers thumb on the track */
 
-   /*custom styles*/
-   background-color: #dc57fd;
-   height: 2rem;
-   border-radius: 100px;
-   width: 1rem;
-}
+            /*custom styles*/
+            background-color: #dc57fd;
+            height: 2rem;
+            border-radius: 100px;
+            width: 1rem;
+        }
 
-        input[type="color"]{
+        input[type="color"] {
             width: 48px;
             height: 48px;
             border: none;
@@ -244,173 +239,161 @@ input[type="range"]::-webkit-slider-thumb {
         </div>
     </div>
 
-    <!-- Остальная разметка без изменений -->
-
     <script>
         // Канвас и контекст
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
 
-// Текущий цвет кисти
-let currentColor = '#000000';
-
-// Толщина кисти
-let brushSize = 5;
-
-// Флаг указывающий на то, что рисование активно
-let isDrawing = false;
-
-// Текущее изображение
-let currentDataUrl = null;
-
-// Массив сохраненных рисунков
-let drawings = [];
-
-// API для хранения рисунков
-const API_URL = 'drawings.json';
-
-        function showDrawScreen() {
-            document.getElementById('drawScreen').classList.add('active');
-            document.getElementById('galleryScreen').classList.remove('active');
-            resizeCanvas();
+        // Устанавливаем размер канваса
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight - document.querySelector('.tools').offsetHeight;
         }
 
-// Имитация работы с API
-const API = {
-  async getDrawings() {
-    const response = await fetch(API_URL);
-    return await response.json();
-  },
+        // Устанавливаем текущий цвет и толщину кисти из элементов управления
+        document.getElementById('color').addEventListener('input', (e) => {
+            currentColor = e.target.value;
+        });
 
-  async saveDrawing(data) {
-    // В реальном проекте здесь должен быть POST-запрос на сервер
-    const allDrawings = await this.getDrawings();
-    allDrawings.push(data);
+        document.getElementById('size').addEventListener('input', (e) => {
+            brushSize = e.target.value;
+        });
 
-    // Для демо сохраняем данные на клиенте, т.к. у нас нет реального API
-    // Данные не будут сохраняться в файле, но создаем массив
-    await localStorage.setItem('drawings', JSON.stringify(allDrawings));
-    return data;
-  }
-};
+        // Текущий цвет кисти
+        let currentColor = '#000000';
 
-// Функция сохранения текущего изображения в LocalStorage
-function saveCurrentDrawing() {
-  const dataUrl = canvas.toDataURL();
-  localStorage.setItem('currentDrawing', dataUrl);
-}
+        // Толщина кисти
+        let brushSize = 5;
 
-// Функция сохранения текущего изображения после нажатия кнопки «Сохранить»
-function saveAndReturn() {
-  saveCurrentDrawing();
-  currentDataUrl = canvas.toDataURL();
-  showModal();
-}
+        // Флаг указывающий на то, что рисование активно
+        let isDrawing = false;
 
-// Функция загрузки сохраненного изображения в LocalStorage
-function loadCurrentDrawing() {
-  const dataUrl = localStorage.getItem('currentDrawing');
-  if (dataUrl) {
-    const img = new Image();
-    img.onload = function() {
-      ctx.drawImage(img, 0, 0);
-    };
-    img.src = dataUrl;
-  }
-}
+        // Текущее изображение
+        let currentDataUrl = null;
 
-// Функция сохранения рисунков в LocalStorage
-function saveDrawing() {
-  const title = document.getElementById('titleInput').value;
-  const author = document.getElementById('authorInput').value;
-  if (!title || !author) {
-    alert('Заполните все поля!');
-    return;
-  }
+        // Массив сохраненных рисунков
+        let drawings = [];
 
-  const drawingData = {
-    id: Date.now(),
-    title,
-    author,
-    image: currentDataUrl,
-    date: new Date().toISOString()
-  };
+        // Функция сохранения текущего изображения в LocalStorage
+        function saveCurrentDrawing() {
+            const dataUrl = canvas.toDataURL();
+            localStorage.setItem('currentDrawing', dataUrl);
+        }
 
-  API.saveDrawing(drawingData).then(() => {
-    localStorage.setItem('drawings', JSON.stringify(drawingData));
-    clearCanvas();
-    showGallery();
-  });
-}
+        // Функция сохранения текущего изображения после нажатия кнопки «Сохранить»
+        function saveAndReturn() {
+            saveCurrentDrawing();
+            currentDataUrl = canvas.toDataURL();
+            showModal();
+        }
 
-// Функция очистки канваса
-function clearCanvas() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-}
+        // Функция загрузки сохраненного изображения в LocalStorage
+        function loadCurrentDrawing() {
+            const dataUrl = localStorage.getItem('currentDrawing');
+            if (dataUrl) {
+                const img = new Image();
+                img.onload = function() {
+                    ctx.drawImage(img, 0, 0);
+                };
+                img.src = dataUrl;
+            }
+        }
 
-// Функция отображения модального окна
-function showModal() {
-  const modal = document.getElementById('modal');
-  modal.style.display = 'block';
-}
+        // Функция сохранения рисунков в LocalStorage
+        function saveDrawing() {
+            const title = document.getElementById('titleInput').value;
+            const author = document.getElementById('authorInput').value;
+            if (!title || !author) {
+                alert('Заполните все поля!');
+                return;
+            }
 
-// Функция отображения галереи рисунков
-function showGallery() {
-  const gallery = document.getElementById('gallery');
-  gallery.style.display = 'block';
+            const drawingData = {
+                id: Date.now(),
+                title,
+                author,
+                image: currentDataUrl,
+                date: new Date().toISOString()
+            };
 
-  // Загрузка сохраненных рисунков из LocalStorage
-  const drawingsData = localStorage.getItem('drawings');
-  if (drawingsData) {
-    drawings = JSON.parse(drawingsData);
-    const galleryList = document.getElementById('gallery-list');
-    galleryList.innerHTML = '';
+            drawings.push(drawingData);
+            localStorage.setItem('drawings', JSON.stringify(drawings));
+            clearCanvas();
+            showGallery();
+        }
 
-    drawings.forEach(drawing => {
-      const galleryItem = document.createElement('div');
-      galleryItem.innerHTML = `
-        <h2>${drawing.title}</h2>
-        <p>Автор: ${drawing.author}</p>
-        <p>Дата: ${drawing.date}</p>
-        <img src="${drawing.image}" alt="${drawing.title}">
-      `;
-      galleryList.appendChild(galleryItem);
-    });
-  }
-}
+        // Функция очистки канваса
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
 
-// Обработчики событий
-canvas.addEventListener('mousedown', (e) => {
-  isDrawing = true;
-  const x = e.offsetX;
-  const y = e.offsetY;
-  ctx.beginPath();
-  ctx.moveTo(x, y);
-});
+        // Функция отображения модального окна
+        function showModal() {
+            const modal = document.getElementById('modal');
+            modal.style.display = 'block';
+        }
 
-canvas.addEventListener('mousemove', (e) => {
-  if (isDrawing) {
-    const x = e.offsetX;
-    const y = e.offsetY;
-    ctx.lineTo(x, y);
-    ctx.strokeStyle = currentColor;
-    ctx.lineWidth = brushSize;
-    ctx.stroke();
-  }
-});
+        // Функция отображения галереи рисунков
+        function showGallery() {
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = ''; // Очистка галереи перед добавлением
+            const drawingsData = localStorage.getItem('drawings');
+            if (drawingsData) {
+                drawings = JSON.parse(drawingsData);
+                drawings.forEach(drawing => {
+                    const galleryItem = document.createElement('div');
+                    galleryItem.className = 'gallery-item';
+                    galleryItem.innerHTML = `
+                        <h2>${drawing.title}</h2>
+                        <p>Автор: ${drawing.author}</p>
+                        <p>Дата: ${drawing.date}</p>
+                        <img src="${drawing.image}" alt="${drawing.title}">
+                    `;
+                    gallery.appendChild(galleryItem);
+                });
+            }
 
-canvas.addEventListener('mouseup', () => {
-  isDrawing = false;
-});
+            // Показ галереи и скрытие рисовальной страницы
+            document.getElementById('galleryScreen').classList.add('active');
+            document.getElementById('drawScreen').classList.remove('active');
+        }
 
-document.getElementById('saveButton').addEventListener('click', saveAndReturn);
-document.getElementById('clearButton').addEventListener('click', clearCanvas);
-document.getElementById('galleryButton').addEventListener('click', showGallery);
-document.getElementById('saveDrawingButton').addEventListener('click', saveDrawing);
+        // Обработчики событий
+        canvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            const x = e.offsetX;
+            const y = e.offsetY;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        });
 
-// Инициализация
-loadCurrentDrawing();
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDrawing) {
+                const x = e.offsetX;
+                const y = e.offsetY;
+                ctx.lineTo(x, y);
+                ctx.strokeStyle = currentColor;
+                ctx.lineWidth = brushSize;
+                ctx.stroke();
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            isDrawing = false;
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isDrawing = false;
+        });
+
+        document.getElementById('saveButton').addEventListener('click', saveAndReturn);
+        document.getElementById('clearButton').addEventListener('click', clearCanvas);
+        document.getElementById('galleryButton').addEventListener('click', showGallery);
+
+        // Инициализация
+        loadCurrentDrawing();
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas); // Обработка изменения размера окна
     </script>
-
 </body>
 </html>
