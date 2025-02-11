@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <title>ГРОЗА УНИТАЗОВ!!</title>
     <style>
-         * {
+        * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
@@ -16,7 +16,7 @@
             font-family: Arial, sans-serif;
             background: #FFFFFF;
             height: 100vh;
-            overflow: hidden; /* Скрываем полосу прокрутки */
+            overflow: hidden;
         }
 
         .screen {
@@ -45,50 +45,35 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin: 10px 0;
             width: 100%;
-            height: calc(100vh - 90px); /* Отнимаем высоту инструментов */
+            height: calc(100vh - 160px);
         }
 
         #canvas {
             touch-action: none;
             width: 100%;
-            height: 100%; /* Высота 100% для растягивания по контейнеру */
-        }
-
-        .tools {
-            display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            height: 70px;
-            background: #F4F4F4;
-            color: black;
-            padding: 0 15px;
-            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Стили для галереи */
-        .gallery {
-            display: flex;
-            flex-direction: column;
-            margin-top: 20px;
-        }
-
-        .gallery-item {
-            background: white;
-            border-radius: 10px;
-            padding: 5px;
-            margin: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            aspect-ratio: 1;
-        }
-
-        .gallery-item img {
-            width: 100%;
             height: 100%;
-            object-fit: cover;
-            border-radius: 6px;
+            border-radius: 10px;
+        }
+
+        
+
+        .color-picker {
+            display: flex;
+            align-items: center;
+            margin: 0 10px;
+        }
+
+        input[type="color"] {
+            -webkit-appearance: none;
+            appearance: none;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            outline: none;
+            margin-left: 10px;
+            border: 2px solid transparent;
         }
 
         .fab {
@@ -97,8 +82,8 @@
             right: 20px;
             width: 56px;
             height: 56px;
-            border-radius: 24%;
-            font-size: 40px;
+            border-radius: 50%;
+            font-size: 36px;
             background: #F4F4F4;
             color: #5937F3;
             display: flex;
@@ -110,53 +95,7 @@
             border: none;
         }
 
-        .tool-btn {
-            border: none;
-            outline: none;
-            background: transparent;
-            border-radius: 20px;
-            color: black;
-            cursor: pointer;
-        }
-
-        input[type="range"] {
-            -webkit-appearance: none;
-            appearance: none;
-            background: transparent;
-            cursor: pointer;
-            width: 100px;
-        }
-
-        input[type="range"]:focus {
-            outline: none;
-        }
-
-        input[type="range"]::-webkit-slider-runnable-track {
-            background-color: #e7bef3;
-            border-radius: 5rem;
-            height: 0.5rem;  
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            margin-top: -12px;
-            background-color: #dc57fd;
-            height: 2rem;
-            border-radius: 100px;
-            width: 1rem;
-        }
-
-        input[type="color"] {
-            width: 48px;
-            height: 48px;
-            border: none;
-            outline: none;
-            padding: 0;
-            background: transparent;
-            border-radius: 50%;
-        }
-        
+        /* Modal styles */
         .modal {
             display: none;
             position: fixed;
@@ -164,7 +103,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
             z-index: 2000;
         }
 
@@ -187,6 +126,80 @@
             border: 1px solid #ddd;
             border-radius: 5px;
         }
+
+        .gallery-item {
+            margin-bottom: 15px;
+        }
+
+        .gallery-item img {
+            max-width: 100%;
+            border-radius: 10px;
+        }
+
+        h2, p {
+            margin: 5px 0;
+        }
+
+        .tools {
+    display: flex;
+    align-items: center; /* Выравнивание по центру по вертикали */
+    justify-content: space-around; /* Равномерное распределение пространства между элементами */
+    position: fixed;  
+    bottom: 0;
+    width: 100%;
+    height: 70px;
+    background: #F4F4F4;
+    padding: 10px;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+    border-top: 2px solid #D0D0D0; /* Добавление верхней границы для улучшения визуального разделения */
+}
+
+.color-picker {
+    display: flex;
+    align-items: center;
+}
+
+.color-picker label {
+    margin-right: 8px;
+    font-weight: bold; /* Сделать текст более заметным */
+}
+
+input[type="color"] {
+    cursor: pointer;
+    border: 2px solid #E0E0E0; /* Добавление границы для цветового выборщика */
+    border-radius: 50%; /* Сделать круглый выбор цвета */
+    width: 40px;
+    height: 40px;
+    transition: border 0.3s; /* Плавный переход */
+}
+
+input[type="color"]:hover {
+    border-color: #5937F3; /* Изменение цвета границы при наведении */
+}
+
+.brush-size {
+    margin: 0 10px; /* Отступ справа и слева */
+}
+
+.tool-btn {
+    background: #E0E0E0;
+    border: none;
+    outline: none;
+    border-radius: 5px;
+    padding: 10px;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.1s;
+    font-size: 18px; /* Увеличение размера шрифта для удобства использования */
+}
+
+.tool-btn:hover {
+    background: #D0D0D0; /* Изменение цвета кнопки при наведении */
+    transform: scale(1.05); /* Увеличение кнопки при наведении для эффекта */
+}
+
+.tool-btn:active {
+    transform: scale(0.95); /* Немного уменьшать кнопку при нажатии для эффекта */
+}
     </style>
 </head>
 <body>
@@ -216,92 +229,161 @@
                 <canvas id="canvas"></canvas>
             </div>
             <div class="tools">
-                <input type="color" id="color" value="#000000">
-                <input type="range" id="size" min="1" max="50" value="5">
-                <button class="tool-btn" onclick="clearCanvas()"><i class="fa fa-refresh"></i></button>
-                <button class="tool-btn" onclick="toggleEraser()"><i class="fa fa-eraser"></i></button>
-                <button class="tool-btn" onclick="saveAndReturn()"><i class="fa fa-save"></i></button>
+                <div class="color-picker">
+                    <label for="color">Цвет кисти:</label>
+                    <input type="color" id="color" value="#000000" onchange="setColor(this.value)">
+                </div>
+                <input type="range" id="size" min="1" max="50" value="5" title="Размер кисти" class="brush-size">
+                <button class="tool-btn" title="Очистить рисунок" onclick="clearCanvas()"><i class="fa fa-refresh"></i></button>
+                <button class="tool-btn" title="Ластик" onclick="toggleEraser()"><i class="fa fa-eraser"></i></button>
+                <button class="tool-btn" title="Сохранить" onclick="saveAndReturn()"><i class="fa fa-save"></i></button>
+                <button class="tool-btn" title="Отменить" onclick="undoLast()"><i class="fa fa-undo"></i></button>
+                <button class="tool-btn" title="Повторить" onclick="redoLast()"><i class="fa fa-redo"></i></button>
             </div>
         </div>
     </div>
 
     <script>
+        // Canvas setup
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-
         let isDrawing = false;
         let currentColor = '#000000';
         let brushSize = 5;
-        let currentDataUrl = null;
-        let drawings = [];
+        let undoStack = [];
+        let redoStack = [];
+        let drawings = []; // инициализация массива для хранения изображений
 
+        // Resize canvas to fit the screen
         function resizeCanvas() {
             canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight - document.querySelector('.tools').offsetHeight; // Высота окна минус высота инструментов
+            canvas.height = window.innerHeight - document.querySelector('.tools').offsetHeight;
         }
 
-        document.getElementById('color').addEventListener('input', (e) => {
-            currentColor = e.target.value;
-        });
+        // Set color on change
+        function setColor(color) {
+            currentColor = color;
+        }
 
+        // Brush size input handling
         document.getElementById('size').addEventListener('input', (e) => {
             brushSize = e.target.value;
         });
 
-        canvas.addEventListener('mousedown', (e) => {
+        // Mouse and touch event handling
+        canvas.addEventListener('mousedown', (e) => { startDrawing(e); });
+        canvas.addEventListener('mousemove', (e) => { draw(e); });
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseleave', stopDrawing);
+
+        canvas.addEventListener('touchstart', (e) => { startDrawing(e); });
+        canvas.addEventListener('touchmove', (e) => { drawTouch(e); });
+        canvas.addEventListener('touchend', stopDrawing);
+
+        // Start drawing
+        function startDrawing(e) {
             isDrawing = true;
             ctx.beginPath();
             draw(e);
-        });
+        }
 
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', () => isDrawing = false);
-        canvas.addEventListener('mouseleave', () => isDrawing = false);
-
+        // Draw on canvas
         function draw(e) {
             if (!isDrawing) return;
             const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            ctx.lineTo(x, y);
+            const x = e.clientX || (e.touches && e.touches[0].clientX);
+            const y = e.clientY || (e.touches && e.touches[0].clientY);
+            ctx.lineTo(x - rect.left, y - rect.top);
             ctx.strokeStyle = currentColor;
             ctx.lineWidth = brushSize;
+            ctx.lineCap = "round"; 
             ctx.stroke();
             ctx.beginPath();
-            ctx.moveTo(x, y);
+            ctx.moveTo(x - rect.left, y - rect.top);
         }
 
+        function drawTouch(e) {
+            e.preventDefault();
+            draw(e);
+        }
+
+        // Stop drawing
+        function stopDrawing() {
+            if (!isDrawing) return;
+            isDrawing = false;
+            ctx.beginPath();
+            saveState();
+        }
+
+        // Save canvas state for undo functionality
+        function saveState() {
+            undoStack.push(canvas.toDataURL());
+            redoStack = []; // Clear redo stack on new action
+        }
+
+        // Undo last action
+        function undoLast() {
+            if (undoStack.length === 0) return;
+            const lastState = undoStack.pop();
+            redoStack.push(canvas.toDataURL());
+            const img = new Image();
+            img.src = lastState;
+            img.onload = () => ctx.drawImage(img, 0, 0);
+        }
+
+        // Redo last undone action
+        function redoLast() {
+            if (redoStack.length === 0) return;
+            const redoState = redoStack.pop();
+            undoStack.push(canvas.toDataURL());
+            const img = new Image();
+            img.src = redoState;
+            img.onload = () => ctx.drawImage(img, 0, 0);
+        }
+
+        // Clear the canvas
         function clearCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            undoStack = []; // Clear undo stack
         }
 
+        // Toggle eraser functionality
         function toggleEraser() {
-            currentColor = (currentColor === '#ffffff') ? '#000000' : '#ffffff'; // Смена цвета
-            document.getElementById('color').value = currentColor; // Обновляем цвет в элементе управления
+            currentColor = (currentColor === '#FFFFFF') ? '#000000' : '#FFFFFF';
+            document.getElementById('color').value = currentColor;
         }
 
+        // Save current drawing
         function saveAndReturn() {
-            currentDataUrl = canvas.toDataURL();
-            showModal();
+            const currentDataUrl = canvas.toDataURL();
+            showModal(currentDataUrl);
         }
 
-        function showModal() {
+        // Show modal for drawing details
+        function showModal(currentDataUrl) {
             document.getElementById('modal').style.display = 'block';
+            document.getElementById('titleInput').value = '';
+            document.getElementById('authorInput').value = '';
         }
 
+        // Hide modal
         function hideModal(event) {
             document.getElementById('modal').style.display = 'none';
         }
 
+        // Show drawing screen
         function showDrawScreen() {
             document.getElementById('drawScreen').classList.add('active');
             document.getElementById('galleryScreen').classList.remove('active');
             resizeCanvas();
         }
 
+        // Save drawing to local storage
         function saveDrawing() {
             const title = document.getElementById('titleInput').value;
             const author = document.getElementById('authorInput').value;
+            const currentDataUrl = canvas.toDataURL();
+
             if (!title || !author || !currentDataUrl) {
                 alert('Заполните все поля и нарисуйте что-нибудь!');
                 return;
@@ -323,6 +405,7 @@
             showGallery();
         }
 
+        // Load gallery from local storage
         function loadGallery() {
             const galleryElement = document.getElementById('gallery');
             galleryElement.innerHTML = '';
@@ -340,22 +423,25 @@
             });
         }
 
+        // Show the gallery
         function showGallery() {
             document.getElementById('galleryScreen').classList.add('active');
             document.getElementById('drawScreen').classList.remove('active');
         }
 
+        // Clear all saved drawings
         function clearAllDrawings() {
             if (confirm('Вы уверены, что хотите очистить галерею?')) {
                 localStorage.removeItem('drawings');
+                drawings = []; // Clear local variable
                 loadGallery();
             }
         }
 
+        // Resize canvas on window resize
         window.addEventListener('resize', resizeCanvas);
         window.onload = function() {
-            const savedDrawings = JSON.parse(localStorage.getItem('drawings')) || [];
-            drawings = savedDrawings; 
+            drawings = JSON.parse(localStorage.getItem('drawings')) || [];
             loadGallery();
             resizeCanvas();
         };
