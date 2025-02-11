@@ -312,9 +312,13 @@
         }
 
         function saveAndReturn() {
-            const currentDataUrl = canvas.toDataURL();
-            showModal(currentDataUrl);
-        }
+    // Используем requestAnimationFrame, чтобы дождаться следующего кадра, если рисование всё ещё продолжается.
+    requestAnimationFrame(() => {
+        const currentDataUrl = canvas.toDataURL();
+        showModal(currentDataUrl);
+    });
+}
+
 
         function showModal(currentDataUrl) {
             document.getElementById('modal').style.display = 'block';
@@ -340,7 +344,7 @@
     const currentDataUrl = canvas.toDataURL();
     const blob = await (await fetch(currentDataUrl)).blob(); 
 
-    if (!title || !author || !blob) {
+    if (!title || !author || !blob || blob.size === 0) { // Проверяем также размер blob
         alert('Заполните все поля и нарисуйте что-нибудь!');
         return;
     }
@@ -348,7 +352,7 @@
     const formData = new FormData();
     formData.append('title', title);
     formData.append('author', author);
-    formData.append('image', blob, 'drawing.png'); // Можно задать имя файла в качестве 'drawing.png'
+    formData.append('image', blob, 'drawing.png');
 
     const response = await fetch('https://abddie.pythonanywhere.com/drawings/', {
         method: 'POST',
@@ -381,7 +385,7 @@
             const galleryItem = document.createElement('div');
             galleryItem.className = 'gallery-item';
             galleryItem.innerHTML = `
-                <img src="${drawing.image}" alt="${drawing.title}" loading="lazy">
+                <img src="${drawing.image}" alt="${drawing.title}">
                 <h2>${drawing.title}</h2>
                 <p>Автор: ${drawing.author}</p>
                 <p>Дата: ${drawing.date}</p>
