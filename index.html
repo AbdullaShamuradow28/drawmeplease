@@ -269,6 +269,12 @@ let drawings = [];
 // API для хранения рисунков
 const API_URL = 'drawings.json';
 
+        function showDrawScreen() {
+            document.getElementById('drawScreen').classList.add('active');
+            document.getElementById('galleryScreen').classList.remove('active');
+            resizeCanvas();
+        }
+
 // Имитация работы с API
 const API = {
   async getDrawings() {
