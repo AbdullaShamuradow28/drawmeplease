@@ -366,34 +366,34 @@
 }
 
         async function loadGallery() {
-            const galleryElement = document.getElementById('gallery');
-            galleryElement.innerHTML = '';
-            const response = await fetch('https://abddie.pythonanywhere.com/drawings/');
+    const galleryElement = document.getElementById('gallery');
+    galleryElement.innerHTML = '';
+    const response = await fetch('https://abddie.pythonanywhere.com/drawings/');
 
-            if (!response.ok) {
-                alert('Ошибка загрузки галереи');
-                return; // Если есть ошибка загрузки, прекращаем выполнение
-            }
-            const savedDrawings = await response.json();
+    if (!response.ok) {
+        alert('Ошибка загрузки галереи');
+        return; // Если есть ошибка загрузки, прекращаем выполнение
+    }
+    const savedDrawings = await response.json();
 
-            if (Array.isArray(savedDrawings) && savedDrawings.length > 0) {
-                savedDrawings.forEach(drawing => {
-                    const galleryItem = document.createElement('div');
-                    galleryItem.className = 'gallery-item';
-                    galleryItem.innerHTML = `
-                        <img src="${drawing.image}" alt="${drawing.title}" loading="lazy">
-                        <h2>${drawing.title}</h2>
-                        <p>Автор: ${drawing.author}</p>
-                        <p>Дата: ${drawing.date}</p>
-                    `;
-                    galleryElement.appendChild(galleryItem);
-                });
-            } else {
-                const noDrawingsMessage = document.createElement('p');
-                noDrawingsMessage.textContent = 'Нет доступных рисунков.';
-                galleryElement.appendChild(noDrawingsMessage);
-            }
-        }
+    if (Array.isArray(savedDrawings) && savedDrawings.length > 0) {
+        savedDrawings.forEach(drawing => {
+            const galleryItem = document.createElement('div');
+            galleryItem.className = 'gallery-item';
+            galleryItem.innerHTML = `
+                <img src="${drawing.image}" alt="${drawing.title}" loading="lazy">
+                <h2>${drawing.title}</h2>
+                <p>Автор: ${drawing.author}</p>
+                <p>Дата: ${drawing.date}</p>
+            `;
+            galleryElement.appendChild(galleryItem);
+        });
+    } else {
+        const noDrawingsMessage = document.createElement('p');
+        noDrawingsMessage.textContent = 'Нет доступных рисунков.';
+        galleryElement.appendChild(noDrawingsMessage);
+    }
+}
 
         function showGallery() {
             document.getElementById('galleryScreen').classList.add('active');
