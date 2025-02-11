@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <title>ГРОЗА УНИТАЗОВ!!</title>
+    <style>
+        /* Все предыдущие стили остаются */
+        
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Добавляем модальное окно -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <h2>Добавить описание</h2>
+            <input type="text" id="titleInput" class="modal-input" placeholder="Название рисунка">
+            <input type="text" id="authorInput" class="modal-input" placeholder="Автор">
+            <button class="tool-btn" onclick="saveDrawing()">Сохранить</button>
+        </div>
+    </div>
+
+    <!-- Остальная разметка без изменений -->
+
+    <script>
+        // Имитация работы с JSON-файлом через API
+        const API = {
+            async getDrawings() {
+                const response = await fetch('drawings.json');
+                return await response.json();
+            },
+            
+            async saveDrawing(data) {
+                const allDrawings = await this.getDrawings();
+                allDrawings.push(data);
+                
+                // В реальном проекте здесь должен быть POST-запрос на сервер
+                // Для демо сохраняем в localStorage
+                localStorage.setItem('drawings', JSON.stringify(allDrawings));
+                return data;
+            }
+        };
+
+        // Модальное окно
+        let currentDataUrl = '';
+        
+        function showModal() {
+            document.getElementById('modal').style.display = 'block';
+        }
+
+        function hideModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        async function saveAndReturn() {
+            currentDataUrl = canvas.toDataURL();
+            showModal();
+        }
+
+        async function saveDrawing() {
+            const title = document.getElementById('titleInput').value;
+            const author = document.getElementById('authorInput').value;
+            
+            if(!title || !author) {
+                alert('Заполните все поля!');
+                return;
+            }
+
+            const drawingData = {
+                id: Date.now(),
+                title,
+                author,
+                image: currentDataUrl,
+                date: new Date().toISOString()
+            };
+
+            await API.saveDrawing(drawingData);
+            hideModal();
+            clearCanvas();
+            showGallery();
+        }
+
+        // Обновленная функция загрузки галереи
+        async function loadGallery() {
+            const gallery = document.getElementById('gallery');
+            const drawings = await API.getDrawings();
+            
+            gallery.innerHTML = drawings.map(d => `
+                <div class="gallery-item">
+                    <img src="${d.image}" alt="${d.title}">
+                    <div style="padding: 10px;">
+                        <h3>${d.title}</h3>
+                        <p>Автор: ${d.author}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Инициализация
+        loadGallery();
+    </script>
+</body>
+</html>
