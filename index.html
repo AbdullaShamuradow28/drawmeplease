@@ -247,42 +247,36 @@ input[type="range"]::-webkit-slider-thumb {
     <!-- Остальная разметка без изменений -->
 
     <script>
-        // Имитация работы с JSON-файлом через API
+        const API_URL = 'drawings.json';
+
+        // Имитация работы с API
         const API = {
             async getDrawings() {
-                const response = await fetch('drawings.json');
+                const response = await fetch(API_URL);
                 return await response.json();
             },
             
             async saveDrawing(data) {
+                // В реальном проекте здесь должен быть POST-запрос на сервер
                 const allDrawings = await this.getDrawings();
                 allDrawings.push(data);
                 
-                // В реальном проекте здесь должен быть POST-запрос на сервер
-                // Для демо сохраняем в localStorage
-                localStorage.setItem('drawings', JSON.stringify(allDrawings));
+                // Для демо сохраняем данные на клиенте, т.к. у нас нет реального API
+                // Данные не будут сохраняться в файле, но создаем массив
+                await localStorage.setItem('drawings', JSON.stringify(allDrawings));
                 return data;
             }
         };
-
-                // Управление экранами
-        function showGallery() {
-            document.getElementById('galleryScreen').classList.add('active');
-            document.getElementById('drawScreen').classList.remove('active');
-            loadGallery();
-        }
-
-        function showDrawScreen() {
-            document.getElementById('drawScreen').classList.add('active');
-            document.getElementById('galleryScreen').classList.remove('active');
-            resizeCanvas();
-        }
 
         // Инициализация холста
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         let isDrawing = false;
-        let isEraser = false;
+        let currentDataUrl = '';
+
+        // Настройки рисования
+        let currentColor = '#000000';
+        let currentSize = 5;
 
         function resizeCanvas() {
             canvas.width = canvas.offsetWidth;
@@ -292,11 +286,7 @@ input[type="range"]::-webkit-slider-thumb {
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
-        // Настройки рисования
-        let currentColor = '#000000';
-        let currentSize = 5;
-
-        // События
+        // События рисования
         canvas.addEventListener('mousedown', startDrawing);
         canvas.addEventListener('mousemove', draw);
         canvas.addEventListener('mouseup', endDrawing);
@@ -313,13 +303,12 @@ input[type="range"]::-webkit-slider-thumb {
 
         function draw(e) {
             if (!isDrawing) return;
-            
             const rect = canvas.getBoundingClientRect();
             const x = (e.clientX || e.touches[0].clientX) - rect.left;
             const y = (e.clientY || e.touches[0].clientY) - rect.top;
 
             ctx.lineTo(x, y);
-            ctx.strokeStyle = isEraser ? '#ffffff' : currentColor;
+            ctx.strokeStyle = currentColor;
             ctx.lineWidth = currentSize;
             ctx.stroke();
             ctx.beginPath();
@@ -334,7 +323,6 @@ input[type="range"]::-webkit-slider-thumb {
         // Управление инструментами
         document.getElementById('color').addEventListener('change', (e) => {
             currentColor = e.target.value;
-            isEraser = false;
         });
 
         document.getElementById('size').addEventListener('input', (e) => {
@@ -346,29 +334,28 @@ input[type="range"]::-webkit-slider-thumb {
         }
 
         function toggleEraser() {
-            isEraser = !isEraser;
+            currentColor = currentColor === '#ffffff' ? '#000000' : '#ffffff';
         }
 
-        // Работа с данными
+        // Управление экранами
+        function showGallery() {
+            document.getElementById('galleryScreen').classList.add('active');
+            document.getElementById('drawScreen').classList.remove('active');
+            loadGallery();
+        }
+
+        function showDrawScreen() {
+            document.getElementById('drawScreen').classList.add('active');
+            document.getElementById('galleryScreen').classList.remove('active');
+            resizeCanvas();
+        }
+
         function saveAndReturn() {
-            const dataUrl = canvas.toDataURL();
-            const drawings = JSON.parse(localStorage.getItem('drawings') || '[]');
-            
-            drawings.push({
-                id: Date.now(),
-                title: `Рисунок ${drawings.length + 1}`,
-                image: dataUrl,
-                date: new Date().toISOString()
-            });
-            
-            localStorage.setItem('drawings', JSON.stringify(drawings));
-            clearCanvas();
-            showGallery();
+            currentDataUrl = canvas.toDataURL();
+            showModal();
         }
 
         // Модальное окно
-        let currentDataUrl = '';
-        
         function showModal() {
             document.getElementById('modal').style.display = 'block';
         }
@@ -377,16 +364,11 @@ input[type="range"]::-webkit-slider-thumb {
             document.getElementById('modal').style.display = 'none';
         }
 
-        async function saveAndReturn() {
-            currentDataUrl = canvas.toDataURL();
-            showModal();
-        }
-
         async function saveDrawing() {
             const title = document.getElementById('titleInput').value;
             const author = document.getElementById('authorInput').value;
             
-            if(!title || !author) {
+            if (!title || !author) {
                 alert('Заполните все поля!');
                 return;
             }
@@ -402,10 +384,10 @@ input[type="range"]::-webkit-slider-thumb {
             await API.saveDrawing(drawingData);
             hideModal();
             clearCanvas();
-            showGallery();
+            showGallery(); // Обновляем галерею после сохранения
         }
 
-        // Обновленная функция загрузки галереи
+        // Функция загрузки галереи
         async function loadGallery() {
             const gallery = document.getElementById('gallery');
             const drawings = await API.getDrawings();
@@ -421,8 +403,9 @@ input[type="range"]::-webkit-slider-thumb {
             `).join('');
         }
 
-        // Инициализация
+        // Загрузка галереи при инициализации
         loadGallery();
     </script>
+
 </body>
 </html>
