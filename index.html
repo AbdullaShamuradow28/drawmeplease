@@ -287,6 +287,12 @@
             showModal();
         }
 
+        function showDrawScreen() {
+            document.getElementById('drawScreen').classList.add('active');
+            document.getElementById('galleryScreen').classList.remove('active');
+            resizeCanvas();
+        }
+
         // Функция загрузки сохраненного изображения в LocalStorage
         function loadCurrentDrawing() {
             const dataUrl = localStorage.getItem('currentDrawing');
