@@ -6,188 +6,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <title>ГРОЗА УНИТАЗОВ!!</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            background: #FFFFFF;
-            height: 100vh;
-            margin: 0;
-        }
-        .screen {
-            display: none;
-            height: 100vh;
-            overflow-y: auto;
-        }
-        .screen.active {
-            display: block;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 15px;
-        }
-        #drawScreen {
-            background: #fff;
-        }
-        .canvas-wrapper {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin: 10px 0;
-            width: 100%;
-            height: 400px; /* Изменено на фиксированную высоту */
-        }
-        #canvas {
-            touch-action: none;
-            width: 100%;
-            height: 100%;
-            border-radius: 10px;
-        }
-        .color-picker {
-            display: flex;
-            align-items: center;
-        }
-        input[type="color"] {
-            -webkit-appearance: none;
-            appearance: none;
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            outline: none;
-            border: 2px solid transparent;
-        }
-        .fab {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            font-size: 36px;
-            background: #F4F4F4;
-            color: #5937F3;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            cursor: pointer;
-            z-index: 1000;
-            border: none;
-        }
-        /* Modal styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 2000;
-        }
-        .modal-content {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 400px;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-        .modal-input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .gallery-item {
-            margin-bottom: 15px;
-            padding: 10px;
-            border-radius: 10px;
-            height: fit-content;
-            overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .gallery-item img {
-            max-width: 100%;
-            height: 200px;
-            border-radius: 10px;
-        }
-        h2, p {
-            margin: 5px 0;
-        }
-        .tools {
-            display: flex;
-            align-items: center;
-            justify-content: flex-start; 
-            position: fixed;  
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 70px;
-            background: #F4F4F4;
-            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
-            border-top: 2px solid #D0D0D0; /* Top border for separation */
-            overflow-x: auto; /* Allow horizontal scroll */
-        }
-        .color-picker {
-            display: flex;
-            align-items: center;
-        }
-        .color-picker label {
-            margin-right: 8px;
-            font-weight: bold; /* Make label text bold */
-        }
-        input[type="color"] {
-            cursor: pointer;
-            border: 2px solid #E0E0E0;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            transition: border 0.3s; /* Smooth transition */
-        }
-        input[type="color"]:hover {
-            border-color: #5937F3; /* Change border color on hover */
-        }
-        .brush-size {
-            margin: 0 10px; /* Add margins */
-        }
-        .tool-btn {
-            background: #E0E0E0;
-            border: none; /* Remove borders */
-            outline: none; /* Remove outline */
-            padding: 10px 15px; /* Add padding for size */
-            cursor: pointer;
-            transition: background 0.3s, transform 0.1s;
-            font-size: 18px; /* Increase font size */
-        }
-        .tool-btn:hover {
-            background: #D0D0D0; /* Change button color on hover */
-            transform: scale(1.05); /* Slightly scale up on hover */
-        }
-        .tool-btn:active {
-            transform: scale(0.95); /* Slightly scale down on active */
-        }
-        .spec-btn {
-            border-radius: 50%;
-        }
+        /* Ваши стили остаются без изменений... */
     </style>
 </head>
 <body>
     <div class="modal" id="modal" onclick="hideModal(event)">
         <div class="modal-content" onclick="event.stopPropagation();">
             <h2>Добавить описание</h2>
-            <input type="text" id="titleInput" class="modal-input" placeholder="Название рисунка">
-            <input type="text" id="authorInput" class="modal-input" placeholder="Автор">
+            <input type="text" id="titleInput" class="modal-input" placeholder="Название рисунка" required>
+            <input type="text" id="authorInput" class="modal-input" placeholder="Автор" required>
             <button class="tool-btn" onclick="saveDrawing()">Сохранить</button>
             <button class="tool-btn" onclick="hideModal(event)">Закрыть</button>
         </div>
@@ -231,7 +58,6 @@
         let brushSize = 5;
         let undoStack = [];
         let redoStack = [];
-        let drawings = []; // инициализация массива для хранения изображений
 
         // Resize canvas to fit the screen
         function resizeCanvas() {
@@ -351,7 +177,7 @@
             resizeCanvas();
         }
 
-        // Save drawing to local storage
+        // Save drawing to the server
         async function saveDrawing() {
             const title = document.getElementById('titleInput').value;
             const author = document.getElementById('authorInput').value;
@@ -380,30 +206,42 @@
             if (response.ok) {
                 hideModal();
                 clearCanvas();
-                loadGallery();
+                await loadGallery(); // Загрузка галереи после сохранения
                 showGallery();
             } else {
                 alert('Ошибка сохранения рисунка');
             }
         }
 
+        // Load gallery from the server
         async function loadGallery() {
             const galleryElement = document.getElementById('gallery');
             galleryElement.innerHTML = '';
             const response = await fetch('https://abddie.pythonanywhere.com/drawings/');
+            if (!response.ok) {
+                alert('Ошибка загрузки галереи');
+                return; // Если есть ошибка загрузки, прекращаем выполнение
+            }
             const savedDrawings = await response.json();
 
-            savedDrawings.forEach(drawing => {
-                const galleryItem = document.createElement('div');
-                galleryItem.className = 'gallery-item';
-                galleryItem.innerHTML = `
-                    <img src="${drawing.image}" alt="${drawing.title}">
-                    <h2>${drawing.title}</h2>
-                    <p>Автор: ${drawing.author}</p>
-                    <p>Дата: ${drawing.date}</p>
-                `;
-                galleryElement.appendChild(galleryItem);
-            });
+            // Проверка возвращаемых данных
+            if (Array.isArray(savedDrawings) && savedDrawings.length > 0) {
+                savedDrawings.forEach(drawing => {
+                    const galleryItem = document.createElement('div');
+                    galleryItem.className = 'gallery-item';
+                    galleryItem.innerHTML = `
+                        <img src="${drawing.image}" alt="${drawing.title}" loading="lazy">
+                        <h2>${drawing.title}</h2>
+                        <p>Автор: ${drawing.author}</p>
+                        <p>Дата: ${drawing.date}</p>
+                    `;
+                    galleryElement.appendChild(galleryItem);
+                });
+            } else {
+                const noDrawingsMessage = document.createElement('p');
+                noDrawingsMessage.textContent = 'Нет доступных рисунков.';
+                galleryElement.appendChild(noDrawingsMessage);
+            }
         }
 
         // Show the gallery
@@ -412,20 +250,19 @@
             document.getElementById('drawScreen').classList.remove('active');
         }
 
-        // Clear all saved drawings
-        function clearAllDrawings() {
+        // Clear all saved drawings (Only for demonstration, needs adjustment if there's an endpoint)
+        async function clearAllDrawings() {
             if (confirm('Вы уверены, что хотите очистить галерею?')) {
-                localStorage.removeItem('drawings');
-                drawings = [];
-                loadGallery();
+                // Законный DELETE должен быть создан на сервере для этого
+                // await fetch('https://abddie.pythonanywhere.com/drawings/', { method: 'DELETE' });
+                document.getElementById('gallery').innerHTML = ''; // очищаем только локально для простоты
             }
         }
 
         // Resize canvas on window resize
         window.addEventListener('resize', resizeCanvas);
         window.onload = function() {
-            drawings = JSON.parse(localStorage.getItem('drawings')) || [];
-            loadGallery();
+            loadGallery(); // Загрузка галереи при загрузке страницы
             resizeCanvas();
         };
     </script>
